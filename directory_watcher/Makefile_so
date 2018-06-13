@@ -1,0 +1,8 @@
+build   :
+	g++ -c -std=c++11 -g -Wall -O1 -pipe -fPIC -I./ -o directory_watcher.o directory_watcher.cpp
+	g++ -shared -o libdirectory_watcher.so directory_watcher.o
+
+clean   :
+	rm *.a *.o *.so
+
+rebuild : clean build
