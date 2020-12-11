@@ -52,7 +52,7 @@ static void signal_handler(int signo)
     case SIGQUIT: // 3
         std::cout << "SIGQUIT" << std::endl;
         break;
-    case SIGTERM: // 20
+    case SIGTERM: // 15
         std::cout << "SIGTERM" << std::endl;
         break;
     default:
