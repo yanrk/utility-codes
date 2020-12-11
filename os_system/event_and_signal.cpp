@@ -36,7 +36,7 @@ static BOOL WINAPI console_handler(DWORD event)
         break;
     }
     s_running = false; // useless in windows
-    return (TRUE); // it will terminal the process at here
+    return (TRUE); // it will terminate the process at here
 }
 #else
 static void signal_handler(int signo)
