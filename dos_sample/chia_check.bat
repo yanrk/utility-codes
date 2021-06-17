@@ -12,8 +12,8 @@ for %%i in (D E F G H I) do (
 )
 
 set process_count=0
-for /f %%i in ('tasklist ^| findstr chia.exe ^| findstr /r /n "^" ^| find /c ":"') do (
-	set /a process_count=%%i
+for /f %%i in ('tasklist ^| findstr chia_plot.exe ^| findstr /r /n "^" ^| find /c ":"') do (
+    set /a process_count=%%i
 )
 
 set /a min_check_count=0
