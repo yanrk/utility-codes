@@ -21,8 +21,8 @@
 
 #define USE_BASH            1
 
-#define TEST_DOMAIN         "speedtest.qingjiaocloud.com"
-#define TEST_DOWNLOAD_URL   "speedtest.qingjiaocloud.com/10MB.bin"
+#define TEST_DOMAIN         "speedtest.qq.com"
+#define TEST_DOWNLOAD_URL   "speedtest.qq.com/10MB.bin"
 
 static FILE * my_popen(const char * command, const char * modes, pid_t * child_pid/* = NULL*/)
 {
