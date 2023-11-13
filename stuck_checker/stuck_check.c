@@ -435,8 +435,8 @@ static int stuck_set_device(const char * serial_number, const char * user_key)
         return -1;
     }
 
-    strncpy(s_device_info->serial_number, serial_number, sizeof(s_device_info->serial_number));
-    strncpy(s_device_info->user_key, user_key, sizeof(s_device_info->user_key));
+    strncpy(s_device_info->serial_number, serial_number, sizeof(s_device_info->serial_number) - 1);
+    strncpy(s_device_info->user_key, user_key, sizeof(s_device_info->user_key) - 1);
 
     return 0;
 }
@@ -478,8 +478,8 @@ static int stuck_checker_in(const char * file, const char * func, int line, uint
     {
         file = slash + 1;
     }
-    strncpy(action_checker->file, file, sizeof(action_checker->file));
-    strncpy(action_checker->func, func, sizeof(action_checker->func));
+    strncpy(action_checker->file, file, sizeof(action_checker->file) - 1);
+    strncpy(action_checker->func, func, sizeof(action_checker->func) - 1);
     action_checker->line = line;
     action_checker->max_time = timeout;
     action_checker->check_in = get_ns_time();
