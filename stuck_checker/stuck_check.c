@@ -12,6 +12,7 @@
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include "stuck_check.h"
 
 #pragma pack(push, 1)
 
@@ -363,6 +364,8 @@ static int stuck_checker_check()
                 break;
             }
         }
+
+        usleep(50000);
     }
 
     return 0;
