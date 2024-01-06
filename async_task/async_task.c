@@ -141,6 +141,8 @@ int async_task_init()
 {
     RUN_LOG_DBG("async task init begin");
 
+    s_task_running = 1;
+
     while (s_task_threads < TASK_THREAD_COUNT)
     {
         task_queue_t * task_queue = &s_task_queue[s_task_threads % TASK_QUEUE_COUNT];
@@ -150,6 +152,8 @@ int async_task_init()
         if (0 != result)
         {
             RUN_LOG_ERR("async task init failure while init thread (%d) attr error (%d)", s_task_threads, errno);
+            s_task_running = 0;
+            s_task_threads = 0;
             return (0 == s_task_threads ? -1 : 0);
         }
 
@@ -157,6 +161,8 @@ int async_task_init()
         if (0 != result)
         {
             RUN_LOG_ERR("async task init failure while set thread (%d) detach error (%d)", s_task_threads, errno);
+            s_task_running = 0;
+            s_task_threads = 0;
             return (0 == s_task_threads ? -2 : 0);
         }
 
@@ -165,6 +171,8 @@ int async_task_init()
         if (0 != result)
         {
             RUN_LOG_ERR("async task init failure while create thread (%d) error (%d)", s_task_threads, errno);
+            s_task_running = 0;
+            s_task_threads = 0;
             return (0 == s_task_threads ? -3 : 0);
         }
 
@@ -176,8 +184,6 @@ int async_task_init()
 
         ++s_task_threads;
     }
-
-    s_task_running = 1;
 
     RUN_LOG_DBG("async task init success");
 
