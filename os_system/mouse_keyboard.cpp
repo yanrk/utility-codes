@@ -205,10 +205,10 @@ bool mk_mouse_move_relative(int dx, int dy) // something wrong
     static int s_screen_virtual_height = 0;
     if (0 == s_screen_physical_width || 0 == s_screen_physical_height || 0 == s_screen_virtual_width || 0 == s_screen_virtual_height)
     {
-        HDC hdcScreen = GetDC(NULL);
-        s_screen_physical_width = GetDeviceCaps(hdcScreen, HORZSIZE);
-        s_screen_physical_height = GetDeviceCaps(hdcScreen, VERTSIZE);
-        ReleaseDC(NULL, hdcScreen);
+        HDC hdc_screen = GetDC(NULL);
+        s_screen_physical_width = GetDeviceCaps(hdc_screen, HORZSIZE);
+        s_screen_physical_height = GetDeviceCaps(hdc_screen, VERTSIZE);
+        ReleaseDC(NULL, hdc_screen);
         s_screen_virtual_width = GetSystemMetrics(SM_CXSCREEN);
         s_screen_virtual_height = GetSystemMetrics(SM_CYSCREEN);
         if (0 == s_screen_physical_width || 0 == s_screen_physical_height || 0 == s_screen_virtual_width || 0 == s_screen_virtual_height)
