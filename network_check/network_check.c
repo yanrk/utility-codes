@@ -140,6 +140,7 @@ static int do_get_address(char host_ip[16], char host_mac[18], char host_mask[16
         inet_ntop(AF_INET, &mask_addr->sin_addr, host_mask, 15);
 
         result = network_check_success;
+        break;
     }
 
     close(sock);
