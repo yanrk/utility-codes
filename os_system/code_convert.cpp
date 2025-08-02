@@ -187,25 +187,25 @@ int main()
     std::string utf8 = ansi_to_utf8(ansi);
     if (utf8_to_ansi(utf8) != ansi)
     {
-        return (1);
+        return 1;
     }
 
     std::wstring unic = ansi_to_unicode(ansi);
     if (unicode_to_ansi(unic) != ansi)
     {
-        return (2);
+        return 2;
     }
 
     if (utf8_to_unicode(utf8) != unic)
     {
-        return (3);
+        return 3;
     }
 
     if (unicode_to_utf8(unic) != utf8)
     {
-        return (4);
+        return 4;
     }
 
     std::cout << "done" << std::endl;
-    return (0);
+    return 0;
 }

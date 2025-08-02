@@ -7,7 +7,7 @@ bool mk_keyboard(uint16_t keycode, bool down)
     input.type = INPUT_KEYBOARD;
     input.ki.wVk = keycode;
     input.ki.dwFlags = (down ? 0 : KEYEVENTF_KEYUP);
-    return (SendInput(1, &input, sizeof(INPUT)) == 1);
+    return SendInput(1, &input, sizeof(INPUT)) == 1;
 }
 
 bool mk_keyboard(uint16_t keycode, bool ctrl, bool alt, bool shift, bool down)
@@ -81,19 +81,19 @@ bool mk_keyboard(uint16_t keycode, bool ctrl, bool alt, bool shift, bool down)
             ++count;
         }
     }
-    return (SendInput(count, input, sizeof(INPUT)) == count);
+    return SendInput(count, input, sizeof(INPUT)) == count;
 }
 
 bool mk_keyboard_string(const char * str)
 {
     if (nullptr == str)
     {
-        return (false);
+        return false;
     }
     std::size_t len = strlen(str);
     if (0 == len)
     {
-        return (true);
+        return true;
     }
     std::vector<INPUT> input(len * 4);
     memset(&input[0], 0x0, sizeof(INPUT) * input.size());
@@ -124,7 +124,7 @@ bool mk_keyboard_string(const char * str)
             ++count;
         }
     }
-    return (SendInput(count, &input[0], sizeof(INPUT)) == count);
+    return SendInput(count, &input[0], sizeof(INPUT)) == count;
 }
 
 enum class mk_mouse_button_t : uint8_t
@@ -171,11 +171,11 @@ bool mk_mouse_button(mk_mouse_button_t button, bool down)
         }
         default:
         {
-            return (false);
+            return false;
             break;
         }
     }
-    return (1 == SendInput(1, &input, sizeof(INPUT)));
+    return 1 == SendInput(1, &input, sizeof(INPUT));
 }
 
 bool mk_mouse_wheel(int wheel)
@@ -184,7 +184,7 @@ bool mk_mouse_wheel(int wheel)
     input.type = INPUT_MOUSE;
     input.mi.dwFlags = MOUSEEVENTF_WHEEL;
     input.mi.mouseData = wheel;
-    return (1 == SendInput(1, &input, sizeof(INPUT)));
+    return 1 == SendInput(1, &input, sizeof(INPUT));
 }
 
 bool mk_mouse_move_absolute(int x, int y)
@@ -194,7 +194,7 @@ bool mk_mouse_move_absolute(int x, int y)
     input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE; // | MOUSEEVENTF_VIRTUALDESK;
     input.mi.dx = static_cast<LONG>(x * 65535.0 / GetSystemMetrics(SM_CXSCREEN) + 0.5);
     input.mi.dy = static_cast<LONG>(y * 65535.0 / GetSystemMetrics(SM_CYSCREEN) + 0.5);
-    return (1 == SendInput(1, &input, sizeof(INPUT)));
+    return 1 == SendInput(1, &input, sizeof(INPUT));
 }
 
 bool mk_mouse_move_relative(int dx, int dy) // something wrong
@@ -213,7 +213,7 @@ bool mk_mouse_move_relative(int dx, int dy) // something wrong
         s_screen_virtual_height = GetSystemMetrics(SM_CYSCREEN);
         if (0 == s_screen_physical_width || 0 == s_screen_physical_height || 0 == s_screen_virtual_width || 0 == s_screen_virtual_height)
         {
-            return (false);
+            return false;
         }
     }
     INPUT input = { 0x0 };
@@ -221,7 +221,7 @@ bool mk_mouse_move_relative(int dx, int dy) // something wrong
     input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_MOVE_NOCOALESCE;
     input.mi.dx = dx; // static_cast<LONG>(1.0 * dx * s_screen_physical_width / s_screen_virtual_width);
     input.mi.dy = dy; // static_cast<LONG>(1.0 * dy * s_screen_physical_height / s_screen_virtual_height);
-    return (1 == SendInput(1, &input, sizeof(INPUT)));
+    return 1 == SendInput(1, &input, sizeof(INPUT));
 }
 
 int main()

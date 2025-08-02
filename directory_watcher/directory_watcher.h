@@ -5,7 +5,7 @@
  * Blog        : blog.csdn.net/cxxmaker
  * Version     : 1.0
  * History     :
- * Copyright(C): RAYVISION
+ * Copyright(C): 2025
  ********************************************************/
 
 #ifndef DIRECTORY_WATCHER_H

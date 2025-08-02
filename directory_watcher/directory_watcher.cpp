@@ -5,7 +5,7 @@
  * Blog        : blog.csdn.net/cxxmaker
  * Version     : 1.0
  * History     :
- * Copyright(C): RAYVISION
+ * Copyright(C): 2025
  ********************************************************/
 
 #ifdef _MSC_VER
@@ -41,7 +41,7 @@ bool DirectoryWatcher::init(const std::string & directory)
     if (INVALID_HANDLE_VALUE != m_watcher)
     {
         DBG_MESSAGE("init watcher failure while watcher has initialized");
-        return (false);
+        return false;
     }
 
     if (!directory.empty() && directory.back() != '/' && directory.back() != '\\')
@@ -56,10 +56,10 @@ bool DirectoryWatcher::init(const std::string & directory)
     if (INVALID_HANDLE_VALUE == (m_watcher = CreateFile(m_directory.c_str(), GENERIC_READ | GENERIC_WRITE | FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL)))
     {
         DBG_MESSAGE("init watcher failure while create file failed");
-        return (false);
+        return false;
     }
 
-    return (true);
+    return true;
 }
 
 void DirectoryWatcher::exit()
@@ -77,7 +77,7 @@ bool DirectoryWatcher::watch_wait()
     if (INVALID_HANDLE_VALUE == m_watcher)
     {
         DBG_MESSAGE("watcher wait events failure while watcher is invalid");
-        return (false);
+        return false;
     }
 
     while (true)
@@ -147,7 +147,7 @@ bool DirectoryWatcher::watch_wait()
         }
     }
 
-    return (true);
+    return true;
 }
 
 #else
@@ -172,13 +172,13 @@ bool DirectoryWatcher::init(const std::string & directory)
     if (-1 != m_watcher)
     {
         DBG_MESSAGE("init watcher failure while watcher has initialized");
-        return (false);
+        return false;
     }
 
     if (-1 == (m_watcher = inotify_init()))
     {
         DBG_MESSAGE("init watcher failure while inotify init failed");
-        return (false);
+        return false;
     }
 
     std::list<std::string> dir_list;
@@ -226,7 +226,7 @@ bool DirectoryWatcher::init(const std::string & directory)
         append_watch(dir_name);
     }
 
-    return (!m_description_directory_map.empty());
+    return !m_description_directory_map.empty();
 }
 
 void DirectoryWatcher::exit()
@@ -249,13 +249,13 @@ const std::string & DirectoryWatcher::search_watch(int description)
     std::map<int, std::string>::const_iterator iter = m_description_directory_map.find(description);
     if (m_description_directory_map.end() != iter)
     {
-        return (iter->second);
+        return iter->second;
     }
     else
     {
         DBG_MESSAGE("search watch failed while watcher map can not find (%d)", description);
         static const std::string s_directory;
-        return (s_directory);
+        return s_directory;
     }
 }
 
@@ -264,12 +264,12 @@ int DirectoryWatcher::search_watch(const std::string & directory)
     std::map<std::string, int>::const_iterator iter = m_directory_description_map.find(directory);
     if (m_directory_description_map.end() != iter)
     {
-        return (iter->second);
+        return iter->second;
     }
     else
     {
         DBG_MESSAGE("search watch failed while watcher map can not find (%s)", directory.c_str());
-        return (-1);
+        return -1;
     }
 }
 
@@ -280,12 +280,12 @@ bool DirectoryWatcher::append_watch(const std::string & directory)
     {
         m_description_directory_map[description] = directory;
         m_directory_description_map[directory] = description;
-        return (true);
+        return true;
     }
     else
     {
         DBG_MESSAGE("append watch for (%s) failed while watcher map size (%u)", directory.c_str(), static_cast<unsigned int>(m_description_directory_map.size()));
-        return (false);
+        return false;
     }
 }
 
@@ -294,12 +294,12 @@ bool DirectoryWatcher::append_watch(int description, const std::string & sub_dir
     const std::string & directory = search_watch(description);
     if (!directory.empty())
     {
-        return (append_watch(directory + sub_directory + "/"));
+        return append_watch(directory + sub_directory + "/");
     }
     else
     {
         DBG_MESSAGE("append watch for (.../%s) failed while watcher map can not find (%d)", sub_directory.c_str(), description);
-        return (false);
+        return false;
     }
 }
 
@@ -343,7 +343,7 @@ bool DirectoryWatcher::watch_wait()
     if (-1 == m_watcher)
     {
         DBG_MESSAGE("watcher wait events failure while watcher is invalid");
-        return (false);
+        return false;
     }
 
     while (true)
@@ -415,7 +415,7 @@ bool DirectoryWatcher::watch_wait()
         }
     }
 
-    return (true);
+    return true;
 }
 
 #endif // _MSC_VER

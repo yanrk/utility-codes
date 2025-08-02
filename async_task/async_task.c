@@ -154,7 +154,7 @@ int async_task_init()
             RUN_LOG_ERR("async task init failure while init thread (%d) attr error (%d)", s_task_threads, errno);
             s_task_running = 0;
             s_task_threads = 0;
-            return (0 == s_task_threads ? -1 : 0);
+            return 0 == s_task_threads ? -1 : 0;
         }
 
         result = pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
@@ -163,7 +163,7 @@ int async_task_init()
             RUN_LOG_ERR("async task init failure while set thread (%d) detach error (%d)", s_task_threads, errno);
             s_task_running = 0;
             s_task_threads = 0;
-            return (0 == s_task_threads ? -2 : 0);
+            return 0 == s_task_threads ? -2 : 0;
         }
 
         pthread_t thread_id;
@@ -173,7 +173,7 @@ int async_task_init()
             RUN_LOG_ERR("async task init failure while create thread (%d) error (%d)", s_task_threads, errno);
             s_task_running = 0;
             s_task_threads = 0;
-            return (0 == s_task_threads ? -3 : 0);
+            return 0 == s_task_threads ? -3 : 0;
         }
 
         if (s_task_threads < TASK_QUEUE_COUNT)

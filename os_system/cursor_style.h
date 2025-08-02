@@ -26,7 +26,7 @@ static bool copy_bitmap_data(HBITMAP bitmap_handle, BITMAP & bitmap, std::string
     if (nullptr == bitmap_handle || 0 == GetObject(bitmap_handle, sizeof(bitmap), &bitmap))
     {
         bitmap_data.clear();
-        return (false);
+        return false;
     }
 
     LONG bitmap_size = static_cast<LONG>((bitmap.bmHeight * bitmap.bmWidth * bitmap.bmBitsPixel) / 8);
@@ -35,10 +35,10 @@ static bool copy_bitmap_data(HBITMAP bitmap_handle, BITMAP & bitmap, std::string
     if (0 == GetBitmapBits(bitmap_handle, bitmap_size, &bitmap_data[0]))
     {
         bitmap_data.clear();
-        return (false);
+        return false;
     }
 
-    return (true);
+    return true;
 }
 
 static bool copy_icon_data(HICON icon_handle, cursor_data_t & cursor_data, std::string & data)
@@ -46,7 +46,7 @@ static bool copy_icon_data(HICON icon_handle, cursor_data_t & cursor_data, std::
     ICONINFO icon_info = { 0x0 };
     if (nullptr == icon_handle || !GetIconInfo(icon_handle, &icon_info))
     {
-        return (false);
+        return false;
     }
 
     cursor_data.x_hotspot = static_cast<uint32_t>(icon_info.xHotspot);
@@ -94,7 +94,7 @@ static bool copy_icon_data(HICON icon_handle, cursor_data_t & cursor_data, std::
         DeleteObject(icon_info.hbmColor);
     }
 
-    return (!data.empty());
+    return !data.empty();
 }
 
 bool cursor_capture(cursor_data_t & cursor_data, std::string & data)
@@ -105,37 +105,37 @@ bool cursor_capture(cursor_data_t & cursor_data, std::string & data)
     CURSORINFO cursor_info = { sizeof(CURSORINFO) };
     if (!GetCursorInfo(&cursor_info))
     {
-        return (false);
+        return false;
     }
 
     HICON icon_handle = CopyIcon(cursor_info.hCursor);
     if (nullptr == icon_handle)
     {
-        return (false);
+        return false;
     }
 
     bool ret = copy_icon_data(icon_handle, cursor_data, data);
 
     DestroyIcon(icon_handle);
 
-    return (ret);
+    return ret;
 }
 
 bool cursor_update(const cursor_data_t & cursor_data, const char * data, uint32_t size)
 {
     if (nullptr == data || 0 == size)
     {
-        return (false);
+        return false;
     }
 
     if (0 == cursor_data.mask_data_size && 0 == cursor_data.color_data_size)
     {
-        return (false);
+        return false;
     }
 
     if (cursor_data.mask_data_size + cursor_data.color_data_size != size)
     {
-        return (false);
+        return false;
     }
 
     HBITMAP mask_bitmap_handle = nullptr;
@@ -182,7 +182,7 @@ bool cursor_update(const cursor_data_t & cursor_data, const char * data, uint32_
 
     if (nullptr == mask_bitmap_handle && nullptr == color_bitmap_handle)
     {
-        return (false);
+        return false;
     }
 
     ICONINFO icon_info = { 0 };
@@ -204,13 +204,13 @@ bool cursor_update(const cursor_data_t & cursor_data, const char * data, uint32_
 
     if (nullptr == cursor_handle)
     {
-        return (false);
+        return false;
     }
 
     SetCursor(cursor_handle);
     DeleteObject(cursor_handle);
 
-    return (true);
+    return true;
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
@@ -231,10 +231,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
         }
         default:
         {
-            return (DefWindowProc(hwnd, message, wparam, lparam));
+            return DefWindowProc(hwnd, message, wparam, lparam);
             break;
         }
     }
 
-    return (0);
+    return 0;
 }

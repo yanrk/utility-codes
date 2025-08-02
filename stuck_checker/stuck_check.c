@@ -109,7 +109,7 @@ static uint64_t get_ns_time()
 {
     struct timespec ts = { 0x0 };
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    return ((uint64_t)(ts.tv_sec) * NS_OF_ONE_SECOND + (uint64_t)(ts.tv_nsec));
+    return uint64_t)(ts.tv_sec) * NS_OF_ONE_SECOND + (uint64_t)(ts.tv_nsec;
 }
 
 static void release_memory_map()
@@ -177,12 +177,12 @@ static int acquire_memory_map()
 
         RUN_LOG_DBG("acquire memory map success");
 
-        return (0);
+        return 0;
     } while (0);
 
     release_memory_map();
 
-    return (-1);
+    return -1;
 }
 
 static void close_stuck_checker()

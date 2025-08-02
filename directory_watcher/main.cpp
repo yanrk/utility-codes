@@ -5,7 +5,7 @@
  * Blog        : blog.csdn.net/cxxmaker
  * Version     : 1.0
  * History     :
- * Copyright(C): RAYVISION
+ * Copyright(C): 2025
  ********************************************************/
 
 #include "directory_watcher.h"
@@ -41,5 +41,5 @@ int main(int, char * [])
     DirectoryWatcher watcher(sink);
     watcher.init(directory);
     watcher.watch_wait();
-    return (0);
+    return 0;
 }

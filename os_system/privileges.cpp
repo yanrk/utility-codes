@@ -38,11 +38,11 @@ static bool reboot_system()
         if (!ExitWindowsEx(EWX_REBOOT | EWX_FORCE, SHTDN_REASON_MAJOR_APPLICATION | SHTDN_REASON_MINOR_SECURITY))
         {
             RUN_LOG_ERR("exit windows failed");
-            return (false);
+            return false;
         }
     }
 
-    return (true);
+    return true;
 }
 
 static bool change_desktop()
@@ -92,7 +92,7 @@ static bool change_desktop()
         CloseDesktop(active_desktop);
     }
 
-    return (ret);
+    return ret;
 }
 
 static DWORD get_current_active_session_id()
@@ -112,12 +112,12 @@ static DWORD get_current_active_session_id()
                 WTSFreeMemory(ptr_connect_state);
                 if (WTSActive == wts_connect_state)
                 {
-                    return (session_id);
+                    return session_id;
                 }
             }
         }
     }
-    return (0);
+    return 0;
 }
 
 static bool service_create_user_process(const std::wstring & program_path, const std::wstring & program_command_line)
@@ -200,5 +200,5 @@ static bool service_create_user_process(const std::wstring & program_path, const
         process_environment = nullptr;
     }
 
-    return (result);
+    return result;
 }

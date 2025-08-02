@@ -71,12 +71,12 @@ struct device_settings_value_less_t
             {
                 if (lhs.name == m_primary_device)
                 {
-                    return (true);
+                    return true;
                 }
 
                 if (rhs.name == m_primary_device)
                 {
-                    return (false);
+                    return false;
                 }
             }
         }
@@ -84,21 +84,21 @@ struct device_settings_value_less_t
         {
             if (lhs.primary != rhs.primary)
             {
-                return (lhs.primary);
+                return lhs.primary;
             }
         }
 
         if (lhs.x_position != rhs.x_position)
         {
-            return (lhs.x_position < rhs.x_position);
+            return lhs.x_position < rhs.x_position;
         }
 
         if (lhs.y_position != rhs.y_position)
         {
-            return (lhs.y_position < rhs.y_position);
+            return lhs.y_position < rhs.y_position;
         }
 
-        return (false);
+        return false;
     }
 
     bool            m_change_primary;
@@ -111,30 +111,30 @@ struct display_settings_value_equal_t
     {
         if (lhs.width != rhs.width)
         {
-            return (false);
+            return false;
         }
 
         if (lhs.height != rhs.height)
         {
-            return (false);
+            return false;
         }
 
         if (lhs.frequency != rhs.frequency)
         {
-            return (false);
+            return false;
         }
 
         if (lhs.flags != rhs.flags)
         {
-            return (false);
+            return false;
         }
 
         if (lhs.bits != rhs.bits)
         {
-            return (false);
+            return false;
         }
 
-        return (true);
+        return true;
     }
 };
 
@@ -144,35 +144,35 @@ struct display_settings_value_less_t
     {
         if (lhs.name != rhs.name)
         {
-            return (lhs.name < rhs.name);
+            return lhs.name < rhs.name;
         }
 
         if (lhs.bits != rhs.bits)
         {
-            return (lhs.bits < rhs.bits);
+            return lhs.bits < rhs.bits;
         }
 
         if (lhs.width != rhs.width)
         {
-            return (lhs.width < rhs.width);
+            return lhs.width < rhs.width;
         }
 
         if (lhs.height != rhs.height)
         {
-            return (lhs.height < rhs.height);
+            return lhs.height < rhs.height;
         }
 
         if (lhs.flags != rhs.flags)
         {
-            return (lhs.flags < rhs.flags);
+            return lhs.flags < rhs.flags;
         }
 
         if (lhs.frequency != rhs.frequency)
         {
-            return (lhs.frequency < rhs.frequency);
+            return lhs.frequency < rhs.frequency;
         }
 
-        return (false);
+        return false;
     }
 };
 
@@ -182,35 +182,35 @@ struct display_settings_delta_less_t
     {
         if (lhs.delta_width != rhs.delta_width)
         {
-            return (lhs.delta_width < rhs.delta_width);
+            return lhs.delta_width < rhs.delta_width;
         }
 
         if (lhs.delta_height != rhs.delta_height)
         {
-            return (lhs.delta_height < rhs.delta_height);
+            return lhs.delta_height < rhs.delta_height;
         }
 
         if (lhs.delta_flags != rhs.delta_flags)
         {
-            return (lhs.delta_flags < rhs.delta_flags);
+            return lhs.delta_flags < rhs.delta_flags;
         }
 
         if (lhs.delta_frequency != rhs.delta_frequency)
         {
-            return (lhs.delta_frequency < rhs.delta_frequency);
+            return lhs.delta_frequency < rhs.delta_frequency;
         }
 
         if (lhs.delta_bits != rhs.delta_bits)
         {
-            return (lhs.delta_bits < rhs.delta_bits);
+            return lhs.delta_bits < rhs.delta_bits;
         }
 
         if (lhs.primary != rhs.primary)
         {
-            return (lhs.primary);
+            return lhs.primary;
         }
 
-        return (false);
+        return false;
     }
 };
 
@@ -293,7 +293,7 @@ bool get_all_display_settings(std::list<device_settings_t> & device_settings_lis
         }
     }
 
-    return (!device_settings_list.empty() && !display_settings_list.empty());
+    return !device_settings_list.empty() && !display_settings_list.empty();
 }
 
 bool get_display_settings(const char * device_name, display_settings_t & display_settings)
@@ -302,7 +302,7 @@ bool get_display_settings(const char * device_name, display_settings_t & display
     device_mode.dmSize = sizeof(device_mode);
     if (!EnumDisplaySettingsA(device_name, ENUM_CURRENT_SETTINGS, &device_mode))
     {
-        return (false);
+        return false;
     }
 
     display_settings.bits = device_mode.dmBitsPerPel;
@@ -316,7 +316,7 @@ bool get_display_settings(const char * device_name, display_settings_t & display
     display_settings.delta_flags = 0;
     display_settings.delta_frequency = 0;
 
-    return (true);
+    return true;
 }
 
 bool set_display_settings(std::list<device_settings_t> & device_settings_list, const display_settings_t & display_settings, bool change_primary)
@@ -362,7 +362,7 @@ bool set_display_settings(std::list<device_settings_t> & device_settings_list, c
             device_mode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFLAGS | DM_DISPLAYFREQUENCY | DM_POSITION;
             if (DISP_CHANGE_SUCCESSFUL != ChangeDisplaySettingsExA(device_settings.name.c_str(), &device_mode, nullptr, CDS_UPDATEREGISTRY | CDS_NORESET | (change_primary ? CDS_SET_PRIMARY : 0), nullptr))
             {
-                return (false);
+                return false;
             }
         }
         else
@@ -370,7 +370,7 @@ bool set_display_settings(std::list<device_settings_t> & device_settings_list, c
             device_mode.dmFields = DM_POSITION;
             if (DISP_CHANGE_SUCCESSFUL != ChangeDisplaySettingsExA(device_settings.name.c_str(), &device_mode, nullptr, CDS_UPDATEREGISTRY | CDS_NORESET, nullptr))
             {
-                return (false);
+                return false;
             }
         }
 
@@ -378,14 +378,14 @@ bool set_display_settings(std::list<device_settings_t> & device_settings_list, c
         y_position = 0;
     }
 
-    return (DISP_CHANGE_SUCCESSFUL != ChangeDisplaySettingsExA(nullptr, nullptr, nullptr, 0, nullptr));
+    return DISP_CHANGE_SUCCESSFUL != ChangeDisplaySettingsExA(nullptr, nullptr, nullptr, 0, nullptr);
 }
 
 bool adjust_display_settings(std::list<device_settings_t> & device_settings_list, std::list<display_settings_t> & display_settings_list, uint32_t bits, uint32_t width, uint32_t height, uint32_t flags, uint32_t frequency)
 {
     if (display_settings_list.empty())
     {
-        return (false);
+        return false;
     }
 
     for (std::list<display_settings_t>::iterator iter = display_settings_list.begin(); display_settings_list.end() != iter; ++iter)
@@ -403,17 +403,17 @@ bool adjust_display_settings(std::list<device_settings_t> & device_settings_list
     const display_settings_t & dst_display_settings = display_settings_list.front();
     if (!set_display_settings(device_settings_list, dst_display_settings, true))
     {
-        return (false);
+        return false;
     }
 
     display_settings_t src_display_settings;
     if (!get_display_settings(dst_display_settings.name.c_str(), src_display_settings))
     {
-        return (false);
+        return false;
     }
 
     display_settings_value_equal_t display_settings_equal;
-    return (display_settings_equal(src_display_settings, dst_display_settings));
+    return display_settings_equal(src_display_settings, dst_display_settings);
 }
 
 int main()

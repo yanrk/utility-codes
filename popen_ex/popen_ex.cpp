@@ -13,7 +13,7 @@ FILE * goofer_popen(const char * command, const char * mode, size_t & child)
 
     if (nullptr == command || nullptr == mode)
     {
-        return (nullptr);
+        return nullptr;
     }
 
     bool binary_data = (0 != strchr(mode, 'b'));
@@ -22,7 +22,7 @@ FILE * goofer_popen(const char * command, const char * mode, size_t & child)
 
     if (parent_read_child_write == parent_write_child_read)
     {
-        return (nullptr);
+        return nullptr;
     }
 
     HANDLE reader_handle = INVALID_HANDLE_VALUE;
@@ -30,7 +30,7 @@ FILE * goofer_popen(const char * command, const char * mode, size_t & child)
     SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
     if (!CreatePipe(&reader_handle, &writer_handle, &sa, 0))
     {
-        return (nullptr);
+        return nullptr;
     }
 
     STARTUPINFOA si = { sizeof(STARTUPINFOA) };
@@ -53,7 +53,7 @@ FILE * goofer_popen(const char * command, const char * mode, size_t & child)
     {
         CloseHandle(reader_handle);
         CloseHandle(writer_handle);
-        return (nullptr);
+        return nullptr;
     }
 
     CloseHandle(pi.hThread);
@@ -78,7 +78,7 @@ FILE * goofer_popen(const char * command, const char * mode, size_t & child)
     {
         CloseHandle(file_handle);
         CloseHandle(pi.hProcess);
-        return (nullptr);
+        return nullptr;
     }
 
     FILE * file = _fdopen(fd, mode);
@@ -86,12 +86,12 @@ FILE * goofer_popen(const char * command, const char * mode, size_t & child)
     {
         _close(fd);
         CloseHandle(pi.hProcess);
-        return (nullptr);
+        return nullptr;
     }
 
     child = reinterpret_cast<size_t>(pi.hProcess);
 
-    return (file);
+    return file;
 }
 
 bool goofer_palive(size_t child)
@@ -99,21 +99,21 @@ bool goofer_palive(size_t child)
     HANDLE child_process = reinterpret_cast<HANDLE>(child);
     if (INVALID_HANDLE_VALUE == child_process)
     {
-        return (false);
+        return false;
     }
 
     DWORD exit_code = 0;
     if (!GetExitCodeProcess(child_process, &exit_code))
     {
-        return (false);
+        return false;
     }
     else if (STILL_ACTIVE != exit_code)
     {
-        return (false);
+        return false;
     }
     else
     {
-        return (true);
+        return true;
     }
 }
 
@@ -136,9 +136,9 @@ int goofer_pclose(FILE * file, size_t child)
 
     if (nullptr == file)
     {
-        return (-1);
+        return -1;
     }
-    return (fclose(file));
+    return fclose(file);
 }
 
 #else
@@ -156,20 +156,20 @@ FILE * goofer_popen(const char * command, const char * mode, size_t & child)
 
     if (nullptr == command || nullptr == mode)
     {
-        return (nullptr);
+        return nullptr;
     }
 
     bool parent_read_child_write = (0 != strchr(mode, 'r'));
     bool parent_write_child_read = (0 != strchr(mode, 'w'));
     if (parent_read_child_write == parent_write_child_read)
     {
-        return (nullptr);
+        return nullptr;
     }
 
     int pipe_fd[2] = { -1, -1 };
     if (pipe(pipe_fd) < 0)
     {
-        return (nullptr);
+        return nullptr;
     }
 
     pid_t cpid = fork();
@@ -177,7 +177,7 @@ FILE * goofer_popen(const char * command, const char * mode, size_t & child)
     {
         close(pipe_fd[0]);
         close(pipe_fd[1]);
-        return (nullptr);
+        return nullptr;
     }
     else if (0 == cpid)
     {
@@ -198,7 +198,7 @@ FILE * goofer_popen(const char * command, const char * mode, size_t & child)
         execl("/bin/sh", "sh", "-c", command, nullptr);
         _exit(0);
 
-        return (nullptr);
+        return nullptr;
     }
     else
     {
@@ -211,12 +211,12 @@ FILE * goofer_popen(const char * command, const char * mode, size_t & child)
         if (nullptr == file)
         {
             close(pipe_fd[using_file]);
-            return (nullptr);
+            return nullptr;
         }
 
         child = static_cast<size_t>(cpid);
 
-        return (file);
+        return file;
     }
 }
 
@@ -224,22 +224,22 @@ bool goofer_palive(size_t child)
 {
     if (0 == child)
     {
-        return (false);
+        return false;
     }
 
     pid_t cpid = static_cast<pid_t>(child);
     pid_t epid = waitpid(cpid, nullptr, WNOHANG);
     if (epid < 0)
     {
-        return (false);
+        return false;
     }
     else if (epid == cpid)
     {
-        return (false);
+        return false;
     }
     else
     {
-        return (true);
+        return true;
     }
 }
 
@@ -256,9 +256,9 @@ int goofer_pclose(FILE * file, size_t child)
 {
     if (nullptr == file)
     {
-        return (-1);
+        return -1;
     }
-    return (fclose(file));
+    return fclose(file);
 }
 
 #endif // _MSC_VER
@@ -274,7 +274,7 @@ int main()
     FILE * file = goofer_popen(command, "r", child);
     if (nullptr == file)
     {
-        return (-1);
+        return -1;
     }
 
     char line[128] = { 0x0 };
@@ -285,5 +285,5 @@ int main()
 
     goofer_pclose(file, child);
 
-    return (0);
+    return 0;
 }
