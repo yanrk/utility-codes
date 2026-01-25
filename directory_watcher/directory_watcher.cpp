@@ -25,8 +25,11 @@
 
 DirectoryWatcher::DirectoryWatcher(WatchSink & watch_sink)
     : m_sink(watch_sink)
+    , m_event(NULL)
     , m_watcher(INVALID_HANDLE_VALUE)
     , m_directory()
+    , m_thread()
+    , m_running(false)
 {
 
 }
@@ -38,11 +41,7 @@ DirectoryWatcher::~DirectoryWatcher()
 
 bool DirectoryWatcher::init(const std::string & directory)
 {
-    if (INVALID_HANDLE_VALUE != m_watcher)
-    {
-        DBG_MESSAGE("init watcher failure while watcher has initialized");
-        return false;
-    }
+    exit();
 
     if (!directory.empty() && directory.back() != '/' && directory.back() != '\\')
     {
@@ -53,9 +52,24 @@ bool DirectoryWatcher::init(const std::string & directory)
         m_directory = directory;
     }
 
-    if (INVALID_HANDLE_VALUE == (m_watcher = CreateFile(m_directory.c_str(), GENERIC_READ | GENERIC_WRITE | FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL)))
+    m_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+    if (NULL == m_event)
+    {
+        DBG_MESSAGE("init watcher failure while create event failed");
+        return false;
+    }
+
+    m_watcher = CreateFile(m_directory.c_str(), GENERIC_READ | GENERIC_WRITE | FILE_LIST_DIRECTORY, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+    if (INVALID_HANDLE_VALUE == m_watcher)
     {
         DBG_MESSAGE("init watcher failure while create file failed");
+        return false;
+    }
+
+    m_running = true;
+    m_thread = std::thread(&DirectoryWatcher::watch, this);
+    if (!m_thread.joinable()) {
+        DBG_MESSAGE("init watcher failure while create watch thread failed");
         return false;
     }
 
@@ -66,22 +80,35 @@ void DirectoryWatcher::exit()
 {
     if (INVALID_HANDLE_VALUE != m_watcher)
     {
+        m_running = false;
+        if (m_thread.joinable()) {
+            SetEvent(m_event);
+            m_thread.join();
+        }
+        CloseHandle(m_event);
         CloseHandle(m_watcher);
+        m_event = NULL;
         m_watcher = INVALID_HANDLE_VALUE;
         m_directory.clear();
     }
 }
 
-bool DirectoryWatcher::watch_wait()
+void DirectoryWatcher::watch_wait()
 {
-    if (INVALID_HANDLE_VALUE == m_watcher)
+    HANDLE handles[] = { m_event, m_watcher };
+    while (m_running)
     {
-        DBG_MESSAGE("watcher wait events failure while watcher is invalid");
-        return false;
-    }
+        DWORD wait_res = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+        if (WAIT_OBJECT_0 == wait_res)
+        {
+            break;
+        }
+        else if (WAIT_OBJECT_0 + 1 != wait_res)
+        {
+            DBG_MESSAGE("watcher wait events failed while wait object error");
+            break;
+        }
 
-    while (true)
-    {
         char event_buf[4096] = { 0x0 };
         DWORD event_len = 0;
         if (!ReadDirectoryChangesW(m_watcher, event_buf, sizeof(event_buf), true, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE, &event_len, NULL, NULL))
@@ -146,18 +173,19 @@ bool DirectoryWatcher::watch_wait()
             }
         }
     }
-
-    return true;
 }
 
 #else
 
 DirectoryWatcher::DirectoryWatcher(WatchSink & watch_sink)
     : m_sink(watch_sink)
-    , m_mask(IN_CREATE | IN_DELETE | IN_CLOSE_WRITE | IN_MOVED_FROM | IN_MOVED_TO | IN_MOVE_SELF | IN_DELETE_SELF | IN_ISDIR)
+    , m_mask(IN_CREATE | IN_DELETE | IN_CLOSE_WRITE | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO | IN_MOVE_SELF | IN_DELETE_SELF | IN_ISDIR)
+    , m_pipe{-1, -1}
     , m_watcher(-1)
     , m_description_directory_map()
     , m_directory_description_map()
+    , m_thread()
+    , m_running(false)
 {
 
 }
@@ -169,13 +197,15 @@ DirectoryWatcher::~DirectoryWatcher()
 
 bool DirectoryWatcher::init(const std::string & directory)
 {
-    if (-1 != m_watcher)
-    {
-        DBG_MESSAGE("init watcher failure while watcher has initialized");
+    exit();
+
+    if (-1 == pipe(m_pipe)) {
+        DBG_MESSAGE("init watcher failure while create pipe failed");
         return false;
     }
 
-    if (-1 == (m_watcher = inotify_init()))
+    m_watcher = inotify_init();
+    if (-1 == m_watcher)
     {
         DBG_MESSAGE("init watcher failure while inotify init failed");
         return false;
@@ -226,13 +256,30 @@ bool DirectoryWatcher::init(const std::string & directory)
         append_watch(dir_name);
     }
 
-    return !m_description_directory_map.empty();
+    if (m_description_directory_map.empty()) {
+        DBG_MESSAGE("init watcher failure while no valid directory to watch");
+        return false;
+    }
+
+    m_running = true;
+    m_thread = std::thread(&DirectoryWatcher::watch, this);
+    if (!m_thread.joinable()) {
+        DBG_MESSAGE("init watcher failure while create watch thread failed");
+        return false;
+    }
+
+    return true;
 }
 
 void DirectoryWatcher::exit()
 {
     if (-1 != m_watcher)
     {
+        m_running = false;
+        if (m_thread.joinable()) {
+            write(m_pipe[1], "x", 1);
+            m_thread.join();
+        }
         for (std::map<int, std::string>::const_iterator iter = m_description_directory_map.begin(); m_description_directory_map.end() != iter; ++iter)
         {
             inotify_rm_watch(m_watcher, iter->first);
@@ -240,7 +287,11 @@ void DirectoryWatcher::exit()
         m_description_directory_map.clear();
         m_directory_description_map.clear();
         close(m_watcher);
+        close(m_pipe[0]);
+        close(m_pipe[1]);
         m_watcher = -1;
+        m_pipe[0] = -1;
+        m_pipe[1] = -1;
     }
 }
 
@@ -338,16 +389,38 @@ void DirectoryWatcher::remove_watch(int description, const std::string & sub_dir
     }
 }
 
-bool DirectoryWatcher::watch_wait()
+void DirectoryWatcher::watch_wait()
 {
-    if (-1 == m_watcher)
+    int fdp1 = std::max(m_pipe[0], m_watcher) + 1;
+    while (m_running)
     {
-        DBG_MESSAGE("watcher wait events failure while watcher is invalid");
-        return false;
-    }
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(m_pipe[0], &fds);
+        FD_SET(m_watcher, &fds);
 
-    while (true)
-    {
+        if (-1 == select(fdp1, &fds, nullptr, nullptr, nullptr))
+        {
+            if (EINTR != errno)
+            {
+                DBG_MESSAGE("watcher wait events failed while select error");
+                break;
+            }
+            continue;
+        }
+
+        if (FD_ISSET(m_pipe[0], &fds))
+        {
+            char dummy;
+            read(m_pipe[0], &dummy, 1);
+            break;
+        }
+
+        if (!FD_ISSET(m_watcher, &fds))
+        {
+            continue;
+        }
+
         char event_buf[4096] = { 0x0 };
         int read_len = read(m_watcher, event_buf, sizeof(event_buf));
         if (read_len < static_cast<int>(sizeof(inotify_event)))
@@ -414,8 +487,6 @@ bool DirectoryWatcher::watch_wait()
             break;
         }
     }
-
-    return true;
 }
 
 #endif // _MSC_VER

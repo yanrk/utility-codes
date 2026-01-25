@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstdarg>
 #include <string>
+#include <thread>
 
 #ifdef DEBUG
     #define DBG_MESSAGE(fmt, ...)      printf(fmt "\n", ##__VA_ARGS__)
@@ -55,10 +56,10 @@ public:
 
 public:
     bool init(const std::string & directory);
-    bool watch_wait();
+    void exit();
 
 private:
-    void exit();
+    void watch();
 
 private:
     DirectoryWatcher(const DirectoryWatcher &) = delete;
@@ -66,6 +67,7 @@ private:
 
 #ifdef _MSC_VER
     WatchSink                     & m_sink;
+    HANDLE                          m_event;
     HANDLE                          m_watcher;
     std::string                     m_directory;
 #else
@@ -79,10 +81,13 @@ private:
 
     WatchSink                     & m_sink;
     uint32_t                        m_mask;
+    int                             m_pipe[2];
     int                             m_watcher;
     std::map<int, std::string>      m_description_directory_map;
     std::map<std::string, int>      m_directory_description_map;
 #endif // _MSC_VER
+    std::thread                     m_thread;
+    bool                            m_running;
 };
 
 
