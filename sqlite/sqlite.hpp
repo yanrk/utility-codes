@@ -29,7 +29,7 @@ class SQLiteDB {
     SQLiteDB& operator = (SQLiteDB&& other) = delete;
 
    public:
-    bool init(const std::string& path) {
+    bool init(const std::string& path, bool multi = false) {
         exit();
 
         if (path.empty()) {
@@ -44,6 +44,12 @@ class SQLiteDB {
         }
 
         path_ = path;
+
+        if (multi) {
+            sqlite3_busy_timeout(sqlite_, 3000);
+            execute("PRAGMA journal_mode=WAL;");
+            execute("PRAGMA synchronous=NORMAL;");
+        }
 
         return true;
     }
