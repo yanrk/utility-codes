@@ -99,11 +99,23 @@ class UniquePtrSPSCQueue {
 
     template<typename T>
     void produce(std::unique_ptr<T>&& ptr) {
+        static_assert((std::is_same_v<T, DataTypes> || ...), "Type T must be one of DataTypes");
+
         if (!ptr) {
             return;
         }
 
-        while (!try_produce(std::move(ptr))) {
+        while (true) {
+            size_t writer_idx = writer_idx_.load(std::memory_order_relaxed);
+            Slot& slot = slots_[writer_idx & cap_mask_];
+
+            if (!slot.ready.load(std::memory_order_acquire)) {
+                slot.value = QueueItem(std::move(ptr));
+                slot.ready.store(true, std::memory_order_release);
+                writer_idx_.store(writer_idx + 1, std::memory_order_release);
+                break;
+            }
+
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
     }
